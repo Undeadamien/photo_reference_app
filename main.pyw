@@ -5,7 +5,7 @@ from reference_window import ReferenceWindow
 from setup_window import SetupWindow
 
 
-IMAGE_PATH: str = "C:\\Users\\Damien\\Drawing\\Photo_ref"
+IMAGE_PATH: str = "path\\to\\folder"
 IMAGE_EXTENSION: tuple[str] = (".jpg", ".png")
 IMAGES: list[str] = [join(IMAGE_PATH, image_name)
                      for image_name in listdir(IMAGE_PATH)
