@@ -5,6 +5,7 @@ class SetupWindow(Tk):
 
     def __init__(self,
                  mediator: list,
+                 max_image: int,
                  default_time: int = 15,
                  default_amount: int = 4,
                  ):
@@ -54,7 +55,7 @@ class SetupWindow(Tk):
                                    font=("Small Fonts", 10, "bold"),
                                    showvalue=False,
                                    from_=1,
-                                   to=10,
+                                   to=min(max_image, 10),
                                    tickinterval=1,
                                    orient="horizontal",
                                    length=300
