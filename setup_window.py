@@ -1,7 +1,11 @@
+"""Module containing a personnalized Tk window"""
+
 from tkinter import Button, Label, Tk, Scale
 
 
 class SetupWindow(Tk):
+    """When closed add the values of the two scales to the mediator"""
+
     def __init__(
         self,
         mediator: list,
@@ -10,6 +14,7 @@ class SetupWindow(Tk):
         default_amount: int = 4,
     ):
         super().__init__()
+
         self.resizable(False, False)
         self.attributes("-topmost", True)
         self.overrideredirect(True)
@@ -93,17 +98,14 @@ class SetupWindow(Tk):
             command=self.confirm,
         )
 
-        # set the starting value of the sliders
         self.time_slider.set(default_time)
         self.amount_slider.set(default_amount)
 
-        # place every widget and recenter the window
         self.time_label.grid(row=0, sticky="nesw")
         self.amount_label.grid(row=0, column=1, sticky="nesw")
         self.time_slider.grid(row=1, column=0, sticky="nesw")
         self.amount_slider.grid(row=1, column=1, sticky="nesw")
         self.confirm_button.grid(row=2, column=0, columnspan=2, sticky="nesw")
-        self.recenter()
 
         self.bind("<Return>", lambda _: self.confirm())
         self.bind("<ButtonPress-1>", self.start_move)
@@ -111,39 +113,51 @@ class SetupWindow(Tk):
         self.bind("<ButtonRelease-1>", self.stop_move)
 
     def confirm(self) -> None:
-        self.mediator.append(self.time_slider.get())
-        self.mediator.append(self.amount_slider.get())
-        self.after(0, self.destroy)
+        """Confirm the paramters and close the current window"""
+
+        self.mediator += [self.time_slider.get(), self.amount_slider.get()]
+        self.after(0, self.destroy)  # avoid an error with ButtonRelease bind
 
     def recenter(self) -> None:
+        """Replace the window in the middle of the screen"""
+
         self.update()  # update to get the real size of the window
         pos_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
         pos_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
         self.geometry(f"+{pos_x}+{pos_y}")
 
     def run(self):
+        """Wrapper for recenter and mainloop"""
+
+        self.recenter()
         self.mainloop()
 
     def start_move(self, event) -> None:
+        """Store the position of the mouse relative to the window"""
+
         # mouse position, relative to the top-left corner of the window
         mouse_x = self.winfo_pointerx() - self.winfo_rootx()
         mouse_y = self.winfo_pointery() - self.winfo_rooty()
+
         # filter where the dragging can start
         # in this case we exclude the sliders and the button
-        left_x, right_x = 0, self.winfo_width()
-        left_y, right_y = 0, self.time_label.winfo_height()
+        valid_x = 0 < mouse_x < self.winfo_width()
+        valid_y = 0 < mouse_y < self.time_label.winfo_height()
 
-        if left_x < mouse_x < right_x and left_y < mouse_y < right_y:
+        if valid_x and valid_y:
             self.start_x, self.start_y = event.x, event.y
         else:
             self.start_x, self.start_y = None, None
 
     def do_move(self, event) -> None:
+        """Move the window"""
+
         if self.start_y and self.start_x:
-            self.geometry(
-                f"+{self.winfo_x() + event.x - self.start_x}"
-                + f"+{self.winfo_y() + event.y - self.start_y}"
-            )
+            pos_x = self.winfo_x() + event.x - self.start_x
+            pos_y = self.winfo_y() + event.y - self.start_y
+            self.geometry(f"+{pos_x}+{pos_y}")
 
     def stop_move(self, _) -> None:
+        """Reset self.start_x and self.start_y"""
+
         self.start_x, self.start_y = None, None
