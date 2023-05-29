@@ -4,13 +4,13 @@ from PIL import Image, ImageTk
 
 
 class ReferenceWindow(Tk):
-
-    def __init__(self,
-                 mediator: list,
-                 files: list[str],
-                 image_position: tuple = (0, 40),
-                 image_size: tuple = (350, 500),
-                 ):
+    def __init__(
+        self,
+        mediator: list,
+        files: list[str],
+        image_position: tuple = (0, 40),
+        image_size: tuple = (350, 500),
+    ):
         super().__init__()
 
         self.overrideredirect(True)
@@ -37,51 +37,56 @@ class ReferenceWindow(Tk):
             bg="black",
             highlightcolor="black",
             highlightbackground="black",
-            highlightthickness=2)
+            highlightthickness=2,
+        )
 
         # place holder for the timer
         self.timer = Label(self)
 
         # widget used to cover the image when the timer is paused
-        self.cover = Canvas(self,
-                            bg="black",
-                            border=0,
-                            highlightthickness=1,
-                            highlightbackground="white",
-                            highlightcolor="black"
-                            )
+        self.cover = Canvas(
+            self,
+            bg="black",
+            border=0,
+            highlightthickness=1,
+            highlightbackground="white",
+            highlightcolor="black",
+        )
 
-        self.picture = Label(self,
-                             image=self.images[self.current_image],
-                             highlightbackground="black",
-                             bg="black"
-                             )
+        self.picture = Label(
+            self,
+            image=self.images[self.current_image],
+            highlightbackground="black",
+            bg="black",
+        )
 
-        self.exit_button = Button(self,
-                                  text="X",
-                                  bg="white",
-                                  fg="black",
-                                  font=("Small Fonts", 10, "bold"),
-                                  highlightcolor="black",
-                                  highlightbackground="white",
-                                  relief="flat",
-                                  height=1,
-                                  width=2,
-                                  command=self.destroy
-                                  )
+        self.exit_button = Button(
+            self,
+            text="X",
+            bg="white",
+            fg="black",
+            font=("Small Fonts", 10, "bold"),
+            highlightcolor="black",
+            highlightbackground="white",
+            relief="flat",
+            height=1,
+            width=2,
+            command=self.destroy,
+        )
 
-        self.pause_button = Button(self,
-                                   text="II",
-                                   bg="white",
-                                   fg="black",
-                                   font=("Small Fonts", 10, "bold"),
-                                   highlightcolor="black",
-                                   highlightbackground="white",
-                                   relief="flat",
-                                   height=1,
-                                   width=2,
-                                   command=self.pause
-                                   )
+        self.pause_button = Button(
+            self,
+            text="II",
+            bg="white",
+            fg="black",
+            font=("Small Fonts", 10, "bold"),
+            highlightcolor="black",
+            highlightbackground="white",
+            relief="flat",
+            height=1,
+            width=2,
+            command=self.pause,
+        )
 
         self.grid_columnconfigure(1, weight=2)
 
@@ -95,15 +100,13 @@ class ReferenceWindow(Tk):
         self.bind("<ButtonRelease-1>", self.stop_move)
 
     def convert_image(self, images: list) -> list[ImageTk.PhotoImage]:
-
         converted_images = []
 
         for image in images:
-
             loaded_image = Image.open(f"{image}")
 
             width, height = loaded_image.size
-            resized_image = loaded_image.resize((width*2, height*2))
+            resized_image = loaded_image.resize((width * 2, height * 2))
             resized_image.thumbnail(self.image_size)
 
             converted_images.append(ImageTk.PhotoImage(resized_image))
@@ -111,15 +114,16 @@ class ReferenceWindow(Tk):
         return converted_images
 
     def pause(self) -> None:
-
         self.paused = not self.paused
 
         if self.paused:
             self.after_cancel(self.timer_update_call)
             self.picture.grid_forget()
             self.cover.grid(row=1, column=0, columnspan=3)
-            self.cover.configure(height=self.picture.winfo_height()-2,
-                                 width=self.picture.winfo_width()-2)
+            self.cover.configure(
+                height=self.picture.winfo_height() - 2,
+                width=self.picture.winfo_width() - 2,
+            )
 
         else:
             self.cover.grid_forget()
@@ -127,10 +131,9 @@ class ReferenceWindow(Tk):
             self.timer_update_call = self.after(500, self.update_timer)
 
     def update_image(self) -> None:
-
         self.current_image += 1
 
-        if self.current_image > len(self.images)-1:
+        if self.current_image > len(self.images) - 1:
             self.destroy()
 
         else:
@@ -140,7 +143,6 @@ class ReferenceWindow(Tk):
             self.update_timer()
 
     def update_timer(self) -> None:
-
         minutes, seconds = divmod(self.remaining_time, 60)
 
         self.timer.configure(
@@ -148,7 +150,7 @@ class ReferenceWindow(Tk):
             font=("Small Fonts", 15, "bold"),
             bg="white",
             highlightbackground="black",
-            highlightthickness=2
+            highlightthickness=2,
         )
 
         if not self.paused:
@@ -168,8 +170,10 @@ class ReferenceWindow(Tk):
         self.start_x, self.start_y = event.x, event.y
 
     def do_move(self, event) -> None:
-        self.geometry(f"+{self.winfo_x() + event.x - self.start_x}" +
-                      f"+{self.winfo_y() + event.y - self.start_y}")
+        self.geometry(
+            f"+{self.winfo_x() + event.x - self.start_x}"
+            + f"+{self.winfo_y() + event.y - self.start_y}"
+        )
 
     def stop_move(self, _) -> None:
         self.start_x, self.start_y = None, None

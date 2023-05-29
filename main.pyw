@@ -5,17 +5,16 @@ from reference_window import ReferenceWindow
 from setup_window import SetupWindow
 
 
-IMAGE_PATH: str = "path\\to\\folder"
+IMAGE_PATH: str = r"C:\Users\Damien\Drawing\Photo_ref"
 IMAGE_EXTENSION: tuple[str] = (".jpg", ".png")
-IMAGES: list[str] = [join(IMAGE_PATH, image_name)
-                     for image_name in listdir(IMAGE_PATH)
-                     if image_name.lower().endswith(IMAGE_EXTENSION)]
-
-assert IMAGES, "no files could be found"
+IMAGES: list[str] = [
+    join(IMAGE_PATH, image_name)
+    for image_name in listdir(IMAGE_PATH)
+    if image_name.lower().endswith(IMAGE_EXTENSION)
+]
 
 
 def test_mediator(mediator):
-
     assert mediator[1] <= len(IMAGES)
     assert isinstance(mediator, (list, tuple))
     assert len(mediator) == 2
@@ -23,7 +22,6 @@ def test_mediator(mediator):
 
 
 def main():
-
     mediator = []  # [time, amount]
 
     SetupWindow(mediator, max_image=len(IMAGES)).run()

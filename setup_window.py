@@ -2,14 +2,13 @@ from tkinter import Button, Label, Tk, Scale
 
 
 class SetupWindow(Tk):
-
-    def __init__(self,
-                 mediator: list,
-                 max_image: int,
-                 default_time: int = 15,
-                 default_amount: int = 4,
-                 ):
-
+    def __init__(
+        self,
+        mediator: list,
+        max_image: int,
+        default_time: int = 15,
+        default_amount: int = 4,
+    ):
         super().__init__()
         self.resizable(False, False)
         self.attributes("-topmost", True)
@@ -24,70 +23,75 @@ class SetupWindow(Tk):
             bg="black",
             highlightcolor="black",
             highlightbackground="black",
-            highlightthickness=2
+            highlightthickness=2,
         )
 
-        self.time_slider = Scale(self,
-                                 font=("Small Fonts", 10, "bold"),
-                                 fg="black",
-                                 bg="white",
-                                 sliderrelief="solid",
-                                 troughcolor="grey",
-                                 highlightthickness=2,
-                                 highlightbackground="black",
-                                 showvalue=False,
-                                 from_=5,
-                                 to=60,
-                                 orient="horizontal",
-                                 length=300,
-                                 tickinterval=5,
-                                 bigincrement=5,
-                                 resolution=5
-                                 )
+        self.time_slider = Scale(
+            self,
+            font=("Small Fonts", 10, "bold"),
+            fg="black",
+            bg="white",
+            sliderrelief="solid",
+            troughcolor="grey",
+            highlightthickness=2,
+            highlightbackground="black",
+            showvalue=False,
+            from_=5,
+            to=60,
+            orient="horizontal",
+            length=300,
+            tickinterval=5,
+            bigincrement=5,
+            resolution=5,
+        )
 
-        self.amount_slider = Scale(self,
-                                   bg="white",
-                                   fg="black",
-                                   sliderrelief="solid",
-                                   troughcolor="grey",
-                                   highlightthickness=2,
-                                   highlightbackground="black",
-                                   font=("Small Fonts", 10, "bold"),
-                                   showvalue=False,
-                                   from_=1,
-                                   to=min(max_image, 10),
-                                   tickinterval=1,
-                                   orient="horizontal",
-                                   length=300
-                                   )
+        self.amount_slider = Scale(
+            self,
+            bg="white",
+            fg="black",
+            sliderrelief="solid",
+            troughcolor="grey",
+            highlightthickness=2,
+            highlightbackground="black",
+            font=("Small Fonts", 10, "bold"),
+            showvalue=False,
+            from_=1,
+            to=min(max_image, 10),
+            tickinterval=1,
+            orient="horizontal",
+            length=300,
+        )
 
-        self.time_label = Label(self,
-                                bg="white",
-                                fg="black",
-                                highlightthickness=2,
-                                highlightbackground="black",
-                                font=("Small Fonts", 15, "bold"),
-                                text="MINUTES"
-                                )
+        self.time_label = Label(
+            self,
+            bg="white",
+            fg="black",
+            highlightthickness=2,
+            highlightbackground="black",
+            font=("Small Fonts", 15, "bold"),
+            text="MINUTES",
+        )
 
-        self.amount_label = Label(self,
-                                  text="IMAGES",
-                                  font=("Small Fonts", 15, "bold"),
-                                  fg="black",
-                                  bg="white",
-                                  highlightthickness=2,
-                                  highlightbackground="black"
-                                  )
+        self.amount_label = Label(
+            self,
+            text="IMAGES",
+            font=("Small Fonts", 15, "bold"),
+            fg="black",
+            bg="white",
+            highlightthickness=2,
+            highlightbackground="black",
+        )
 
-        self.confirm_button = Button(self,
-                                     text="CONFIRM",
-                                     font=("Small Fonts", 15, "bold"),
-                                     relief="solid",
-                                     fg="black",
-                                     bg="white",
-                                     highlightthickness=1,
-                                     command=self.confirm
-                                     )
+        self.confirm_button = Button(
+            self,
+            text="CONFIRM",
+            font=("Small Fonts", 15, "bold"),
+            relief="solid",
+            fg="black",
+            bg="white",
+            highlightthickness=1,
+            command=self.confirm,
+        )
 
         # set the starting value of the sliders
         self.time_slider.set(default_time)
@@ -113,8 +117,8 @@ class SetupWindow(Tk):
 
     def recenter(self) -> None:
         self.update()  # update to get the real size of the window
-        pos_x = self.winfo_screenwidth()//2-self.winfo_width()//2
-        pos_y = self.winfo_screenheight()//2-self.winfo_height()//2
+        pos_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
+        pos_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
         self.geometry(f"+{pos_x}+{pos_y}")
 
     def run(self):
@@ -136,8 +140,10 @@ class SetupWindow(Tk):
 
     def do_move(self, event) -> None:
         if self.start_y and self.start_x:
-            self.geometry(f"+{self.winfo_x() + event.x - self.start_x}" +
-                          f"+{self.winfo_y() + event.y - self.start_y}")
+            self.geometry(
+                f"+{self.winfo_x() + event.x - self.start_x}"
+                + f"+{self.winfo_y() + event.y - self.start_y}"
+            )
 
     def stop_move(self, _) -> None:
         self.start_x, self.start_y = None, None
