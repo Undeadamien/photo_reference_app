@@ -12,6 +12,7 @@ IMAGES: list[str] = [
     for image_name in listdir(IMAGE_PATH)
     if image_name.lower().endswith(IMAGE_EXTENSION)
 ]
+assert IMAGES
 
 
 def test_mediator(mediator):
