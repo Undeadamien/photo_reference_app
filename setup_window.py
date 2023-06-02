@@ -9,7 +9,7 @@ class SetupWindow(Tk):
     def __init__(
         self,
         mediator: list,
-        max_image: int,
+        max_image: int = 10,
         default_time: int = 15,
         default_amount: int = 4,
     ):
