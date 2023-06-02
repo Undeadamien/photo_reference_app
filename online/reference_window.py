@@ -1,19 +1,15 @@
-"""Module containing a personnalized Tk window"""
-
-from random import sample
 from tkinter import Button, Canvas, Label, Tk
+
 from PIL import Image, ImageTk
 
 
 class ReferenceWindow(Tk):
-    """Display x images during y minutes"""
-
     def __init__(
         self,
-        mediator: list,
-        files: list[str],
+        duration: int,
+        image_data: list[str],
         image_position: tuple = (0, 40),
-        image_size: tuple = (350, 500),
+        image_size: tuple = (400, 400),
     ):
         super().__init__()
 
@@ -21,8 +17,6 @@ class ReferenceWindow(Tk):
         self.attributes("-topmost", True)
         self.geometry(f"+{image_position[0]}+{image_position[1]}")
         self.focus_force()
-
-        duration, amount, *_ = mediator
 
         self.duration: int = duration * 60 + 1
         self.remaining_time: int = self.duration
@@ -32,7 +26,7 @@ class ReferenceWindow(Tk):
         self.image_position = image_position  # top-left corner
         self.image_size = image_size
 
-        self.images = self.convert_image(sample(files, amount))
+        self.images = self.convert_image(image_data)
         self.current_image = 0  # store which image is currently displayed
 
         self.start_x, self.start_y = None, None
@@ -103,22 +97,18 @@ class ReferenceWindow(Tk):
         self.bind("<B1-Motion>", self.do_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
 
-    def convert_image(self, images: list) -> list[ImageTk.PhotoImage]:
-        """Convert and return, a list of image file into ImageTk.PhotoImage"""
-
+    def convert_image(self, image_data: list) -> list[ImageTk.PhotoImage]:
         converted_images = []
 
-        for image in images:
-            image = Image.open(image)
+        for data in image_data:
+            image = Image.open(data)
+            # image = image.resize((image.size[0] * 2, image.size[1] * 2))
             image.thumbnail(self.image_size)
-
             converted_images.append(ImageTk.PhotoImage(image))
 
         return converted_images
 
     def pause(self) -> None:
-        """Pause the timer cover the image"""
-
         self.paused = not self.paused
 
         if self.paused:
@@ -136,8 +126,6 @@ class ReferenceWindow(Tk):
             self.timer_update_call = self.after(500, self.update_timer)
 
     def update_image(self) -> None:
-        """Pass to the next image and reset the timer"""
-
         self.current_image += 1
 
         if self.current_image >= len(self.images):
@@ -147,8 +135,6 @@ class ReferenceWindow(Tk):
             self.picture.configure(image=self.images[self.current_image])
 
     def update_timer(self) -> None:
-        """Call it self recursively, updating the time and the timer label"""
-
         self.remaining_time -= 1
         minutes, seconds = divmod(self.remaining_time, 60)
 
@@ -170,24 +156,16 @@ class ReferenceWindow(Tk):
             self.update_image()
 
     def run(self) -> None:
-        """Wrapper for update_timer and mainloop"""
-
         self.update_timer()
         self.mainloop()
 
     def start_move(self, event) -> None:
-        """Store the position of the mouse relative to the window"""
-
         self.start_x, self.start_y = event.x, event.y
 
     def do_move(self, event) -> None:
-        """Move the window"""
-
         pos_x = self.winfo_x() + event.x - self.start_x
         pos_y = self.winfo_y() + event.y - self.start_y
         self.geometry(f"+{pos_x}+{pos_y}")
 
     def stop_move(self, _) -> None:
-        """Reset self.start_x and self.start_y"""
-
         self.start_x, self.start_y = None, None

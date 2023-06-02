@@ -1,11 +1,7 @@
-"""Module containing a personnalized Tk window"""
-
-from tkinter import Button, Label, Tk, Scale
+from tkinter import Button, Label, Scale, Tk
 
 
 class SetupWindow(Tk):
-    """When closed add the values of the two scales to the mediator"""
-
     def __init__(
         self,
         mediator: list,
@@ -113,28 +109,20 @@ class SetupWindow(Tk):
         self.bind("<ButtonRelease-1>", self.stop_move)
 
     def confirm(self) -> None:
-        """Confirm the paramters and close the current window"""
-
         self.mediator += [self.time_slider.get(), self.amount_slider.get()]
         self.after(0, self.destroy)  # avoid an error with ButtonRelease bind
 
     def recenter(self) -> None:
-        """Replace the window in the middle of the screen"""
-
         self.update()  # update to get the real size of the window
         pos_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
         pos_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
         self.geometry(f"+{pos_x}+{pos_y}")
 
     def run(self):
-        """Wrapper for recenter and mainloop"""
-
         self.recenter()
         self.mainloop()
 
     def start_move(self, event) -> None:
-        """Store the position of the mouse relative to the window"""
-
         # mouse position, relative to the top-left corner of the window
         mouse_x = self.winfo_pointerx() - self.winfo_rootx()
         mouse_y = self.winfo_pointery() - self.winfo_rooty()
@@ -150,14 +138,10 @@ class SetupWindow(Tk):
             self.start_x, self.start_y = None, None
 
     def do_move(self, event) -> None:
-        """Move the window"""
-
         if self.start_y and self.start_x:
             pos_x = self.winfo_x() + event.x - self.start_x
             pos_y = self.winfo_y() + event.y - self.start_y
             self.geometry(f"+{pos_x}+{pos_y}")
 
     def stop_move(self, _) -> None:
-        """Reset self.start_x and self.start_y"""
-
         self.start_x, self.start_y = None, None
