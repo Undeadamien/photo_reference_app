@@ -102,7 +102,7 @@ class ReferenceWindow(Tk):
 
         for data in image_data:
             image = Image.open(data)
-            # image = image.resize((image.size[0] * 2, image.size[1] * 2))
+            image = image.resize((image.size[0] * 2, image.size[1] * 2))
             image.thumbnail(self.image_size)
             converted_images.append(ImageTk.PhotoImage(image))
 
