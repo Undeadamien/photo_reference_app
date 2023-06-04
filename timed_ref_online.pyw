@@ -1,6 +1,6 @@
-from reference_window import ReferenceWindow
-from scryfall_api import request_image
-from setup_window import SetupWindow
+from module.reference_window import ReferenceWindow
+from module.scryfall_api import request_image
+from module.setup_window import SetupWindow
 
 
 def main():
