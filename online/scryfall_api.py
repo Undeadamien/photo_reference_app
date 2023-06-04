@@ -14,6 +14,7 @@ def request_image(amount):
 
         try:
             image_url = res["image_uris"]["art_crop"]
+            print(res["name"])
         except KeyError:
             continue
 
