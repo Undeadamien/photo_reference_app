@@ -10,11 +10,10 @@ def request_image(amount):
     images = []
 
     while len(images) < amount:
-        res = requests.get(url, headers=headers, timeout=30).json()
+        response = requests.get(url, headers=headers, timeout=30).json()
 
         try:
-            image_url = res["image_uris"]["art_crop"]
-            print(res["name"])
+            image_url = response["image_uris"]["art_crop"]
         except KeyError:
             continue
 
