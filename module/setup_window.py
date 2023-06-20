@@ -4,7 +4,7 @@ from tkinter import Button, Label, Scale, Tk
 class SetupWindow(Tk):
     def __init__(
         self,
-        mediator: list,
+        time_and_amount: list[int],
         max_image: int = 10,
         default_time: int = 15,
         default_amount: int = 4,
@@ -15,17 +15,16 @@ class SetupWindow(Tk):
         self.attributes("-topmost", True)
         self.overrideredirect(True)
         self.focus_force()
-
-        self.mediator = mediator
-
-        self.start_x, self.start_y = None, None
-
         self.configure(
             bg="black",
             highlightcolor="black",
             highlightbackground="black",
             highlightthickness=2,
         )
+
+        self.time_and_amount = time_and_amount
+
+        self.start_x, self.start_y = None, None
 
         self.time_slider = Scale(
             self,
@@ -109,7 +108,7 @@ class SetupWindow(Tk):
         self.bind("<ButtonRelease-1>", self.stop_move)
 
     def confirm(self) -> None:
-        self.mediator += [self.time_slider.get(), self.amount_slider.get()]
+        self.time_and_amount += [self.time_slider.get(), self.amount_slider.get()]
         self.after(0, self.destroy)  # avoid an error with ButtonRelease bind
 
     def recenter(self) -> None:

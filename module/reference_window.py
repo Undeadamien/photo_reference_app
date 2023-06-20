@@ -17,26 +17,25 @@ class ReferenceWindow(Tk):
         self.attributes("-topmost", True)
         self.geometry(f"+{image_position[0]}+{image_position[1]}")
         self.focus_force()
-
-        self.duration: int = duration * 60 + 1
-        self.remaining_time: int = self.duration
-        self.timer_update_call = None
-        self.paused: bool = False
-
-        self.image_position = image_position  # top-left corner
-        self.image_size = image_size
-
-        self.images = self.convert_image(image_data)
-        self.current_image = 0  # store which image is currently displayed
-
-        self.start_x, self.start_y = None, None
-
         self.configure(
             bg="black",
             highlightcolor="black",
             highlightbackground="black",
             highlightthickness=2,
         )
+
+        self.duration: int = duration * 60 + 1
+        self.remaining_time: int = self.duration
+        self.timer_update_call = None
+        self.paused: bool = False
+
+        self.image_position: tuple = image_position  # top-left corner
+        self.image_size: tuple = image_size
+
+        self.images: int = self.convert_image(image_data)
+        self.current_image: int = 0  # store which image is currently displayed
+
+        self.start_x, self.start_y = None, None
 
         # place holder for the timer
         self.timer = Label(self)
@@ -87,7 +86,6 @@ class ReferenceWindow(Tk):
         )
 
         self.grid_columnconfigure(1, weight=2)
-
         self.timer.grid(row=0, column=1, sticky="nesw")
         self.picture.grid(row=1, column=0, columnspan=3)
         self.pause_button.grid(row=0, column=0, sticky="nesw", pady=2, padx=2)
@@ -115,11 +113,10 @@ class ReferenceWindow(Tk):
             self.after_cancel(self.timer_update_call)
             self.picture.grid_forget()
             self.cover.grid(row=1, column=0, columnspan=3)
-
-            height = self.picture.winfo_height() - 2
-            width = self.picture.winfo_width() - 2
-            self.cover.configure(height=height, width=width)
-
+            self.cover.configure(
+                height=self.picture.winfo_height() - 2,
+                width=self.picture.winfo_width() - 2,
+            )
         else:
             self.cover.grid_forget()
             self.picture.grid(row=1, column=0, columnspan=3)
