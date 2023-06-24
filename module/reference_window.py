@@ -1,98 +1,103 @@
-from tkinter import Button, Canvas, Label, Tk
+import tkinter as tk
+import io
 
 from PIL import Image, ImageTk
 
 
-class ReferenceWindow(Tk):
+class ReferenceWindow(tk.Tk):
     def __init__(
         self,
         duration: int,
-        image_data: list[str],
-        image_position: tuple = (0, 40),
-        image_size: tuple = (400, 400),
+        image_data: list[io.BytesIO],
+        image_position: tuple = (0, 40),  # top left corner
+        image_size: tuple = (400, 400),  # dimension in which the image as to fit
     ):
         super().__init__()
 
-        self.overrideredirect(True)
+        # configure window
         self.attributes("-topmost", True)
-        self.geometry(f"+{image_position[0]}+{image_position[1]}")
         self.focus_force()
+        self.overrideredirect(True)
+        self.geometry(f"+{image_position[0]}+{image_position[1]}")
         self.configure(
             bg="black",
-            highlightcolor="black",
             highlightbackground="black",
+            highlightcolor="black",
             highlightthickness=2,
         )
 
+        # attributes
         self.duration: int = duration * 60 + 1
+        self.paused: bool = False
         self.remaining_time: int = self.duration
         self.timer_update_call = None
-        self.paused: bool = False
 
+        self.current_image: int = 0  # store which image is currently displayed
         self.image_position: tuple = image_position  # top-left corner
         self.image_size: tuple = image_size
-
         self.images: int = self.convert_image(image_data)
-        self.current_image: int = 0  # store which image is currently displayed
 
         self.start_x, self.start_y = None, None
 
-        # place holder for the timer
-        self.timer = Label(self)
+        # widgets
+        self.timer = tk.Label(self)  # place holder for the timer
 
-        # widget used to cover the image when the timer is paused
-        self.cover = Canvas(
+        self.picture = tk.Label(
+            self,
+            bg="black",
+            highlightbackground="black",
+            image=self.images[self.current_image],
+        )
+
+        self.cover = tk.Canvas(
             self,
             bg="black",
             border=0,
+            highlightbackground="white",
+            highlightcolor="black",
             highlightthickness=1,
-            highlightbackground="white",
-            highlightcolor="black",
         )
 
-        self.picture = Label(
+        self.exit_button = tk.Button(
             self,
-            image=self.images[self.current_image],
-            highlightbackground="black",
-            bg="black",
-        )
-
-        self.exit_button = Button(
-            self,
-            text="X",
             bg="white",
-            fg="black",
-            font=("Small Fonts", 10, "bold"),
-            highlightcolor="black",
-            highlightbackground="white",
-            relief="flat",
-            height=1,
-            width=2,
             command=self.destroy,
-        )
-
-        self.pause_button = Button(
-            self,
-            text="II",
-            bg="white",
             fg="black",
             font=("Small Fonts", 10, "bold"),
-            highlightcolor="black",
-            highlightbackground="white",
-            relief="flat",
             height=1,
+            highlightbackground="white",
+            highlightcolor="black",
+            relief="flat",
+            text="X",
             width=2,
-            command=self.pause,
         )
 
-        self.grid_columnconfigure(1, weight=2)
-        self.timer.grid(row=0, column=1, sticky="nesw")
-        self.picture.grid(row=1, column=0, columnspan=3)
-        self.pause_button.grid(row=0, column=0, sticky="nesw", pady=2, padx=2)
-        self.exit_button.grid(row=0, column=2, sticky="nesw", pady=2, padx=2)
+        self.pause_button = tk.Button(
+            self,
+            bg="white",
+            command=self.pause,
+            fg="black",
+            font=("Small Fonts", 10, "bold"),
+            height=1,
+            highlightbackground="white",
+            highlightcolor="black",
+            relief="flat",
+            text="II",
+            width=2,
+        )
 
-        self.bind("<ButtonPress-1>", self.start_move)
+        # set draggable widget
+        self.draggable_widget = [self.picture, self.timer, self.cover]
+
+        # place widgets on grid
+        self.grid_columnconfigure(1, weight=2)
+        self.exit_button.grid(row=0, column=2, sticky="nesw", pady=2, padx=2)
+        self.pause_button.grid(row=0, column=0, sticky="nesw", pady=2, padx=2)
+        self.picture.grid(row=1, column=0, columnspan=3)
+        self.timer.grid(row=0, column=1, sticky="nesw")
+
         self.bind("<B1-Motion>", self.do_move)
+        self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
 
     def convert_image(self, image_data: list) -> list[ImageTk.PhotoImage]:
@@ -127,7 +132,6 @@ class ReferenceWindow(Tk):
 
         if self.current_image >= len(self.images):
             self.destroy()
-
         else:
             self.picture.configure(image=self.images[self.current_image])
 
@@ -136,11 +140,11 @@ class ReferenceWindow(Tk):
         minutes, seconds = divmod(self.remaining_time, 60)
 
         self.timer.configure(
-            text=f"{(minutes):02}:{(seconds):02}",
-            font=("Small Fonts", 15, "bold"),
             bg="white",
+            font=("Small Fonts", 15, "bold"),
             highlightbackground="black",
             highlightthickness=2,
+            text=f"{(minutes):02}:{(seconds):02}",
         )
 
         if self.remaining_time >= 0:
@@ -157,12 +161,25 @@ class ReferenceWindow(Tk):
         self.mainloop()
 
     def start_move(self, event) -> None:
-        self.start_x, self.start_y = event.x, event.y
+        def click_on(wid: tk.Widget):
+            mouse_x = self.winfo_pointerx() - self.winfo_rootx()
+            mouse_y = self.winfo_pointery() - self.winfo_rooty()
+            if not (wid.winfo_x() < mouse_x < wid.winfo_x() + wid.winfo_width()):
+                return False
+            if not (wid.winfo_y() < mouse_y < wid.winfo_y() + wid.winfo_height()):
+                return False
+            return True
+
+        if any(map(click_on, self.draggable_widget)):
+            self.start_x, self.start_y = event.x, event.y
+        else:
+            self.start_x, self.start_y = None, None
 
     def do_move(self, event) -> None:
-        pos_x = self.winfo_x() + event.x - self.start_x
-        pos_y = self.winfo_y() + event.y - self.start_y
-        self.geometry(f"+{pos_x}+{pos_y}")
+        if self.start_y and self.start_x:
+            pos_x = self.winfo_x() + event.x - self.start_x
+            pos_y = self.winfo_y() + event.y - self.start_y
+            self.geometry(f"+{pos_x}+{pos_y}")
 
     def stop_move(self, _) -> None:
         self.start_x, self.start_y = None, None

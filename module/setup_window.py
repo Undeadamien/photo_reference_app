@@ -1,137 +1,146 @@
-from tkinter import Button, Label, Scale, Tk
+import tkinter as tk
 
 
-class SetupWindow(Tk):
+class SetupWindow(tk.Tk):
     def __init__(
         self,
-        time_and_amount: list[int],
-        max_image: int = 10,
+        max_image_choice: int = 10,
         default_time: int = 15,
         default_amount: int = 4,
     ):
         super().__init__()
 
+        # configure window
         self.resizable(False, False)
         self.attributes("-topmost", True)
         self.overrideredirect(True)
         self.focus_force()
         self.configure(
             bg="black",
-            highlightcolor="black",
             highlightbackground="black",
+            highlightcolor="black",
             highlightthickness=2,
         )
 
-        self.time_and_amount = time_and_amount
-
+        # attributes
+        self.time_and_amount = (0, 0)
         self.start_x, self.start_y = None, None
 
-        self.time_slider = Scale(
+        # widgets
+        self.time_slider = tk.Scale(
             self,
-            font=("Small Fonts", 10, "bold"),
-            fg="black",
             bg="white",
-            sliderrelief="solid",
-            troughcolor="grey",
-            highlightthickness=2,
-            highlightbackground="black",
-            showvalue=False,
-            from_=5,
-            to=60,
-            orient="horizontal",
-            length=300,
-            tickinterval=5,
             bigincrement=5,
-            resolution=5,
-        )
-
-        self.amount_slider = Scale(
-            self,
-            bg="white",
             fg="black",
-            sliderrelief="solid",
-            troughcolor="grey",
-            highlightthickness=2,
-            highlightbackground="black",
             font=("Small Fonts", 10, "bold"),
-            showvalue=False,
-            from_=1,
-            to=min(max_image, 10),
-            tickinterval=1,
-            orient="horizontal",
+            from_=5,
+            highlightbackground="black",
+            highlightthickness=2,
             length=300,
+            orient="horizontal",
+            resolution=5,
+            showvalue=False,
+            sliderrelief="solid",
+            tickinterval=5,
+            to=60,
+            troughcolor="grey",
         )
 
-        self.time_label = Label(
+        self.amount_slider = tk.Scale(
             self,
             bg="white",
             fg="black",
-            highlightthickness=2,
+            font=("Small Fonts", 10, "bold"),
+            from_=1,
             highlightbackground="black",
+            highlightthickness=2,
+            length=300,
+            orient="horizontal",
+            showvalue=False,
+            sliderrelief="solid",
+            tickinterval=1,
+            to=min(max_image_choice, 10),
+            troughcolor="grey",
+        )
+
+        self.time_label = tk.Label(
+            self,
+            bg="white",
+            fg="black",
             font=("Small Fonts", 15, "bold"),
+            highlightbackground="black",
+            highlightthickness=2,
             text="MINUTES",
         )
 
-        self.amount_label = Label(
+        self.amount_label = tk.Label(
             self,
-            text="IMAGES",
-            font=("Small Fonts", 15, "bold"),
-            fg="black",
             bg="white",
-            highlightthickness=2,
+            fg="black",
+            font=("Small Fonts", 15, "bold"),
             highlightbackground="black",
+            highlightthickness=2,
+            text="IMAGES",
         )
 
-        self.confirm_button = Button(
+        self.confirm_button = tk.Button(
             self,
-            text="CONFIRM",
-            font=("Small Fonts", 15, "bold"),
-            relief="solid",
-            fg="black",
             bg="white",
-            highlightthickness=1,
             command=self.confirm,
+            fg="black",
+            font=("Small Fonts", 15, "bold"),
+            highlightthickness=1,
+            relief="solid",
+            text="CONFIRM",
         )
 
+        # set draggable widget
+        self.draggable_widget: list[tk.Widget] = [self.time_label, self.amount_label]
+
+        # set sliders values
         self.time_slider.set(default_time)
         self.amount_slider.set(default_amount)
 
-        self.time_label.grid(row=0, sticky="nesw")
+        # place widgets on grid
         self.amount_label.grid(row=0, column=1, sticky="nesw")
-        self.time_slider.grid(row=1, column=0, sticky="nesw")
         self.amount_slider.grid(row=1, column=1, sticky="nesw")
         self.confirm_button.grid(row=3, column=0, columnspan=2, sticky="nesw")
+        self.time_label.grid(row=0, sticky="nesw")
+        self.time_slider.grid(row=1, column=0, sticky="nesw")
 
-        self.bind("<Return>", lambda _: self.confirm())
-        self.bind("<ButtonPress-1>", self.start_move)
+        # bind action to function
         self.bind("<B1-Motion>", self.do_move)
+        self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
+        self.bind("<Return>", lambda _: self.confirm())
 
     def confirm(self) -> None:
-        self.time_and_amount += [self.time_slider.get(), self.amount_slider.get()]
-        self.after(0, self.destroy)  # avoid an error with ButtonRelease bind
+        self.time_and_amount = [self.time_slider.get(), self.amount_slider.get()]
+        self.after(0, self.destroy)  # avoid an race condition with ButtonRelease bind
 
     def recenter(self) -> None:
-        self.update()  # update to get the real size of the window
+        self.update()  # update to get the actual size of the window
         pos_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
         pos_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
         self.geometry(f"+{pos_x}+{pos_y}")
 
-    def run(self):
+    def run(self) -> tuple[int, int]:
         self.recenter()
         self.mainloop()
 
+        return self.time_and_amount
+
     def start_move(self, event) -> None:
-        # mouse position, relative to the top-left corner of the window
-        mouse_x = self.winfo_pointerx() - self.winfo_rootx()
-        mouse_y = self.winfo_pointery() - self.winfo_rooty()
+        def click_on(wid: tk.Widget):
+            mouse_x = self.winfo_pointerx() - self.winfo_rootx()
+            mouse_y = self.winfo_pointery() - self.winfo_rooty()
+            if not (wid.winfo_x() < mouse_x < wid.winfo_x() + wid.winfo_width()):
+                return False
+            if not (wid.winfo_y() < mouse_y < wid.winfo_y() + wid.winfo_height()):
+                return False
+            return True
 
-        # filter where the dragging can start
-        # in this case we exclude the sliders and the button
-        valid_x = 0 < mouse_x < self.winfo_width()
-        valid_y = 0 < mouse_y < self.time_label.winfo_height()
-
-        if valid_x and valid_y:
+        if any(map(click_on, self.draggable_widget)):
             self.start_x, self.start_y = event.x, event.y
         else:
             self.start_x, self.start_y = None, None
