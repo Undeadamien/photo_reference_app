@@ -1,15 +1,15 @@
 import io
-from pathlib import Path
-from random import sample
+import pathlib
+import random
 
 from module.reference_window import ReferenceWindow
 from module.setup_window import SetupWindow
 
-IMAGE_PATH = Path("C:/Users/Damien/Drawing/Photo_ref")
+IMAGE_PATH = pathlib.Path("C:/Users/Damien/Drawing/Photo_ref")
 
 
-def sample_image(amount: int, path: Path, extension: str) -> list[io.BytesIO]:
-    image_files = sample(list(path.glob(f"*.{extension}")), amount)
+def sample_image(amount: int, path: pathlib.Path, extension: str) -> list[io.BytesIO]:
+    image_files = random.sample(list(path.glob(f"*.{extension}")), amount)
     sampled_images = []
 
     for image in image_files:
