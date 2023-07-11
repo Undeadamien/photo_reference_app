@@ -54,6 +54,9 @@ def sample_image(amount: int, path: pathlib.Path, extension: str) -> list[io.Byt
 
 
 def run_application():
+    if not (ONLINE or LOCAL):
+        return  # should add something error handling
+
     set_win = SetupWindow(DIR_SIZE, DEFAULT_TIME, DEFAULT_AMOUNT)
     time, amount = set_win.run()
 
