@@ -9,8 +9,8 @@ class ReferenceWindow(tk.Tk):
         self,
         duration: int,
         image_data: list[io.BytesIO],
-        image_position: tuple = (0, 40),  # top left corner
-        image_size: tuple = (400, 400),  # dimension in which the image as to fit
+        image_position: tuple[int, int],
+        image_size: tuple[int, int],
     ):
         super().__init__()
 
@@ -87,7 +87,7 @@ class ReferenceWindow(tk.Tk):
         )
 
         # set draggable widget
-        self.draggable_widget = [self.picture, self.timer, self.cover]
+        self.draggable_widgets = [self.picture, self.timer, self.cover]
 
         # place widgets on grid
         self.grid_columnconfigure(1, weight=2)
@@ -100,13 +100,17 @@ class ReferenceWindow(tk.Tk):
         self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
 
-    def convert_image(self, image_data: list) -> list[ImageTk.PhotoImage]:
+    def convert_image(self, image_data: list[io.BytesIO]) -> list[ImageTk.PhotoImage]:
         converted_images = []
 
         for data in image_data:
             image = Image.open(data)
-            image = image.resize((image.size[0] * 2, image.size[1] * 2))
-            image.thumbnail(self.image_size)
+
+            ratio = min(
+                self.image_size[0] / image.width,
+                self.image_size[1] / image.height,
+            )
+            image = image.resize((int(image.width * ratio), int(image.height * ratio)))
             converted_images.append(ImageTk.PhotoImage(image))
 
         return converted_images
@@ -170,7 +174,7 @@ class ReferenceWindow(tk.Tk):
                 return False
             return True
 
-        if any(map(click_on, self.draggable_widget)):
+        if any(map(click_on, self.draggable_widgets)):
             self.start_x, self.start_y = event.x, event.y
         else:
             self.start_x, self.start_y = None, None

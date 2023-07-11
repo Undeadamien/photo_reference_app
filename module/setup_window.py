@@ -4,9 +4,9 @@ import tkinter as tk
 class SetupWindow(tk.Tk):
     def __init__(
         self,
-        max_image_choice: int = 10,
-        default_time: int = 15,
-        default_amount: int = 4,
+        max_image_choice: int,
+        default_time: int,
+        default_amount: int,
     ):
         super().__init__()
 
@@ -95,7 +95,7 @@ class SetupWindow(tk.Tk):
         )
 
         # set draggable widget
-        self.draggable_widget: list[tk.Widget] = [self.time_label, self.amount_label]
+        self.draggable_widgets: list[tk.Widget] = [self.time_label, self.amount_label]
 
         # set sliders values
         self.time_slider.set(default_time)
@@ -140,7 +140,7 @@ class SetupWindow(tk.Tk):
                 return False
             return True
 
-        if any(map(click_on, self.draggable_widget)):
+        if any(map(click_on, self.draggable_widgets)):
             self.start_x, self.start_y = event.x, event.y
         else:
             self.start_x, self.start_y = None, None
