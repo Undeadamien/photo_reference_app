@@ -1,8 +1,8 @@
+import ast
 import configparser
 import io
 import pathlib
 import random
-import ast
 
 import requests
 

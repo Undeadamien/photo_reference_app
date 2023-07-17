@@ -1,5 +1,5 @@
-import tkinter as tk
 import io
+import tkinter as tk
 
 from PIL import Image, ImageTk
 
@@ -35,9 +35,7 @@ class ReferenceWindow(tk.Tk):
         self.current_image: int = 0  # store which image is currently displayed
         self.image_position: tuple = image_position  # top-left corner
         self.image_size: tuple = image_size
-        self.images: int = self.convert_image(image_data)
-
-        self.start_x, self.start_y = None, None
+        self.images: int = self.convert(image_data)
 
         # widgets
         self.timer = tk.Label(self)  # place holder for the timer
@@ -100,17 +98,19 @@ class ReferenceWindow(tk.Tk):
         self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
 
-    def convert_image(self, image_data: list[io.BytesIO]) -> list[ImageTk.PhotoImage]:
+    def convert(self, image: list[io.BytesIO]) -> list[ImageTk.PhotoImage]:
         converted_images = []
 
-        for data in image_data:
+        for data in image:
             image = Image.open(data)
 
             ratio = min(
                 self.image_size[0] / image.width,
                 self.image_size[1] / image.height,
             )
-            image = image.resize((int(image.width * ratio), int(image.height * ratio)))
+
+            new_size = (int(image.width * ratio), int(image.height * ratio))
+            image = image.resize(new_size)
             converted_images.append(ImageTk.PhotoImage(image))
 
         return converted_images
