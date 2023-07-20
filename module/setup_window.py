@@ -24,6 +24,7 @@ class SetupWindow(tk.Tk):
 
         # attributes
         self.time_and_amount = (0, 0)
+
         self.start_x, self.start_y = None, None
 
         # widgets
@@ -95,7 +96,10 @@ class SetupWindow(tk.Tk):
         )
 
         # set draggable widget
-        self.draggable_widgets: list[tk.Widget] = [self.time_label, self.amount_label]
+        self.draggable_widgets: list[tk.Widget] = [
+            self.time_label,
+            self.amount_label,
+        ]
 
         # set sliders values
         self.time_slider.set(default_time)
@@ -120,9 +124,9 @@ class SetupWindow(tk.Tk):
 
     def recenter(self) -> None:
         self.update()  # update to get the actual size of the window
-        pos_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
-        pos_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
-        self.geometry(f"+{pos_x}+{pos_y}")
+        p_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
+        p_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
+        self.geometry(f"+{p_x}+{p_y}")
 
     def run(self) -> tuple[int, int]:
         self.recenter()
@@ -132,11 +136,11 @@ class SetupWindow(tk.Tk):
 
     def start_move(self, event) -> None:
         def click_on(wid: tk.Widget):
-            mouse_x = self.winfo_pointerx() - self.winfo_rootx()
-            mouse_y = self.winfo_pointery() - self.winfo_rooty()
-            if not (wid.winfo_x() < mouse_x < wid.winfo_x() + wid.winfo_width()):
+            m_x = self.winfo_pointerx() - self.winfo_rootx()
+            m_y = self.winfo_pointery() - self.winfo_rooty()
+            if not (wid.winfo_x() < m_x < wid.winfo_x() + wid.winfo_width()):
                 return False
-            if not (wid.winfo_y() < mouse_y < wid.winfo_y() + wid.winfo_height()):
+            if not (wid.winfo_y() < m_y < wid.winfo_y() + wid.winfo_height()):
                 return False
             return True
 
@@ -147,9 +151,9 @@ class SetupWindow(tk.Tk):
 
     def do_move(self, event) -> None:
         if self.start_y and self.start_x:
-            pos_x = self.winfo_x() + event.x - self.start_x
-            pos_y = self.winfo_y() + event.y - self.start_y
-            self.geometry(f"+{pos_x}+{pos_y}")
+            p_x = self.winfo_x() + event.x - self.start_x
+            p_y = self.winfo_y() + event.y - self.start_y
+            self.geometry(f"+{p_x}+{p_y}")
 
     def stop_move(self, _) -> None:
         self.start_x, self.start_y = None, None

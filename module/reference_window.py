@@ -10,7 +10,7 @@ class ReferenceWindow(tk.Tk):
         duration: int,
         image_data: list[io.BytesIO],
         image_position: tuple[int, int],
-        image_size: tuple[int, int],
+        max_size: tuple[int, int],
     ):
         super().__init__()
 
@@ -34,7 +34,7 @@ class ReferenceWindow(tk.Tk):
 
         self.current_image: int = 0  # store which image is currently displayed
         self.image_position: tuple = image_position  # top-left corner
-        self.image_size: tuple = image_size
+        self.max_size: tuple = max_size
         self.images: int = self.convert(image_data)
 
         # widgets
@@ -97,6 +97,9 @@ class ReferenceWindow(tk.Tk):
         self.bind("<B1-Motion>", self.do_move)
         self.bind("<ButtonPress-1>", self.start_move)
         self.bind("<ButtonRelease-1>", self.stop_move)
+        # lambda _ to catch the event variabe send by bind
+        self.bind("<Escape>", lambda _: self.destroy())
+        self.bind("<space>", lambda _: self.pause())
 
     def convert(self, image: list[io.BytesIO]) -> list[ImageTk.PhotoImage]:
         converted_images = []
@@ -104,13 +107,13 @@ class ReferenceWindow(tk.Tk):
         for data in image:
             image = Image.open(data)
 
-            ratio = min(
-                self.image_size[0] / image.width,
-                self.image_size[1] / image.height,
-            )
-
+            # rescale the image with the best ratio
+            ratio_w = self.max_size[0] / image.width
+            ratio_h = self.max_size[1] / image.height
+            ratio = min(ratio_w, ratio_h)
             new_size = (int(image.width * ratio), int(image.height * ratio))
             image = image.resize(new_size)
+
             converted_images.append(ImageTk.PhotoImage(image))
 
         return converted_images
@@ -133,11 +136,10 @@ class ReferenceWindow(tk.Tk):
 
     def update_image(self) -> None:
         self.current_image += 1
-
         if self.current_image >= len(self.images):
             self.destroy()
-        else:
-            self.picture.configure(image=self.images[self.current_image])
+            return
+        self.picture.configure(image=self.images[self.current_image])
 
     def update_timer(self) -> None:
         self.remaining_time -= 1
@@ -166,11 +168,11 @@ class ReferenceWindow(tk.Tk):
 
     def start_move(self, event) -> None:
         def click_on(wid: tk.Widget):
-            mouse_x = self.winfo_pointerx() - self.winfo_rootx()
-            mouse_y = self.winfo_pointery() - self.winfo_rooty()
-            if not (wid.winfo_x() < mouse_x < wid.winfo_x() + wid.winfo_width()):
+            m_x = self.winfo_pointerx() - self.winfo_rootx()
+            m_y = self.winfo_pointery() - self.winfo_rooty()
+            if not (wid.winfo_x() < m_x < wid.winfo_x() + wid.winfo_width()):
                 return False
-            if not (wid.winfo_y() < mouse_y < wid.winfo_y() + wid.winfo_height()):
+            if not (wid.winfo_y() < m_y < wid.winfo_y() + wid.winfo_height()):
                 return False
             return True
 
@@ -181,9 +183,9 @@ class ReferenceWindow(tk.Tk):
 
     def do_move(self, event) -> None:
         if self.start_y and self.start_x:
-            pos_x = self.winfo_x() + event.x - self.start_x
-            pos_y = self.winfo_y() + event.y - self.start_y
-            self.geometry(f"+{pos_x}+{pos_y}")
+            p_x = self.winfo_x() + event.x - self.start_x
+            p_y = self.winfo_y() + event.y - self.start_y
+            self.geometry(f"+{p_x}+{p_y}")
 
     def stop_move(self, _) -> None:
         self.start_x, self.start_y = None, None
