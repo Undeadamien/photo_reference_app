@@ -24,12 +24,11 @@ POS = ast.literal_eval(config.get("Settings", "Position", fallback="(0, 40)"))
 SIZE = ast.literal_eval(config.get("Settings", "Size", fallback="(400, 400)"))
 
 
-def request_image(url: str, amount: int):
+def request_image(url: str, amount: int) -> list[io.BytesIO]:
     images = set()
     while len(images) < amount:
         try:
             response = requests.get(url, timeout=30)
-            response.raise_for_status()
             image_src = response.json()["image_uris"]["art_crop"]
             image = requests.get(image_src, timeout=30).content
             images.add(io.BytesIO(image))
@@ -41,8 +40,8 @@ def request_image(url: str, amount: int):
 def sample_image(amount: int, path: pathlib.Path) -> list[io.BytesIO]:
     sampled_images = set()
     while len(sampled_images) < amount:
-        image_file = random.choice(list(path.glob("*.jpg")))
         try:
+            image_file = random.choice(list(path.glob("*.jpg")))
             with image_file.open(mode="rb") as file:
                 sampled_images.add(io.BytesIO(file.read()))
         except PermissionError:

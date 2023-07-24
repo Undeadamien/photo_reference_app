@@ -23,8 +23,7 @@ class SetupWindow(tk.Tk):
         )
 
         # attributes
-        self.time_and_amount = (0, 0)
-
+        self.return_values = [0, 0]
         self.start_x, self.start_y = None, None
 
         # widgets
@@ -119,8 +118,8 @@ class SetupWindow(tk.Tk):
         self.bind("<Return>", lambda _: self.confirm())
 
     def confirm(self) -> None:
-        self.time_and_amount = [self.time_slider.get(), self.amount_slider.get()]
-        self.after(0, self.destroy)  # avoid an race condition with ButtonRelease bind
+        self.return_values = [self.time_slider.get(), self.amount_slider.get()]
+        self.after(0, self.destroy)
 
     def recenter(self) -> None:
         self.update()  # update to get the actual size of the window
@@ -132,7 +131,7 @@ class SetupWindow(tk.Tk):
         self.recenter()
         self.mainloop()
 
-        return self.time_and_amount
+        return self.return_values
 
     def start_move(self, event) -> None:
         def click_on(wid: tk.Widget):
