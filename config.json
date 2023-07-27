@@ -1,0 +1,10 @@
+{
+  "api_url": "https://api.scryfall.com/cards/random",
+
+  "path": "C:/Users/Damien/drawing/Photo_ref",
+  "default": { "amount": 6, "time": 5 },
+  "online": false,
+
+  "position": [0, 40],
+  "size": [400, 400]
+}

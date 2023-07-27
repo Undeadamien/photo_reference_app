@@ -26,12 +26,13 @@ class ReferenceWindow(tk.Tk):
             highlightthickness=2,
         )
 
-        # attributes
+        # time
         self.duration: int = duration * 60 + 1
         self.paused: bool = False
         self.remaining_time: int = self.duration
         self.timer_update_call = None
 
+        # image
         self.current_image: int = 0  # store which image is currently displayed
         self.image_position: tuple = image_position  # top-left corner
         self.max_size: tuple = max_size
@@ -105,7 +106,11 @@ class ReferenceWindow(tk.Tk):
         converted_images = []
 
         for data in image:
-            image = Image.open(data)
+            try:
+                image = Image.open(data)
+            except Exception as exception:
+                print(exception)
+                continue
 
             # rescale the image with the best ratio
             ratio_w = self.max_size[0] / image.width

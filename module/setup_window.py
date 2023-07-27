@@ -130,7 +130,6 @@ class SetupWindow(tk.Tk):
     def run(self) -> tuple[int, int]:
         self.recenter()
         self.mainloop()
-
         return self.return_values
 
     def start_move(self, event) -> None:
