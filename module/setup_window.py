@@ -95,10 +95,7 @@ class SetupWindow(tk.Tk):
         )
 
         # set draggable widget
-        self.draggable_widgets: list[tk.Widget] = [
-            self.time_label,
-            self.amount_label,
-        ]
+        self.draggable_widgets: list[tk.Widget] = [self.time_label, self.amount_label]
 
         # set sliders values
         self.time_slider.set(default_time)

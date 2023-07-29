@@ -38,6 +38,8 @@ class ReferenceWindow(tk.Tk):
         self.max_size: tuple = max_size
         self.images: int = self.convert(image_data)
 
+        self.start_x, self.start_y = None, None
+
         # widgets
         self.timer = tk.Label(self)  # place holder for the timer
 
