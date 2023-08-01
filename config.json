@@ -2,10 +2,11 @@
   "api_url": "https://api.scryfall.com/cards/random",
   "path": "C:/Users/Damien/drawing/Photo_ref",
 
-  "online": false,
+  "online": true,
+  "query": "a:magali",
 
   "default": { "amount": 6, "time": 5 },
 
   "position": [0, 40],
-  "size": [400, 400]
+  "size": [500, 500]
 }

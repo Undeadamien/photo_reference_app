@@ -7,10 +7,11 @@ The app allows users to set a timer and interact with the Scryfall API to fetch 
 
 - **Built-in Timer:** The app comes with a timer feature, allowing users to set a specific duration for their drawing sessions. Users can adjust the timer to their preferred drawing time.
 - **Online and Local Image Selection:** Users have the option to fetch card images from the Scryfall API or choose images locally.
-- **Draggable Interface:** The app's user interface is designed to be draggable, allowing users to position the reference wind on the screen according to their convenience.
+- **Advanced Filtering Options:** The API enables users to apply filters to specify card attributes, such as the card artist. To use the filtering option, you just need to insert the query inside the config file or keep it empty to apply no filter.
+For more informations https://scryfall.com/docs/syntax
 
-## To implement
-
-- **Advanced Filtering Options:** The API enables users to apply filters to specify card attributes, such as the card artist. This empowers users to optimize their drawing practice by effortlessly selecting random images based on their preferences.
+```json
+"query": "(a:magali or a:john) and (art:warrior)"
+```
 
 ![image](https://github.com/Undeadamien/photo_reference_app/assets/126392901/d9ddfd84-4336-42db-b5e1-65de4558889e)
