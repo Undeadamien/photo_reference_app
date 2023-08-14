@@ -2,6 +2,7 @@ import io
 import json
 import pathlib
 import random
+import sys
 
 import requests
 
@@ -11,64 +12,69 @@ from module.setup_window import SetupWindow
 CONFIG_FILE: pathlib.Path = pathlib.Path(__file__).parent / "config.json"
 with CONFIG_FILE.open() as config:
     config = json.load(config)
+# setup window parameters
 DEFAULT_AMOUNT: int = config["default"]["amount"]
 DEFAULT_TIME: int = config["default"]["time"]
-IMAGE_PATH: pathlib.Path = pathlib.Path(config["path"])
-POSITION: tuple[int, int] = config["position"]
-ONLINE: bool = config["online"]
-SIZE: tuple[int, int] = config["size"]
-API_URL: str = config["api_url"]
 MAX_IMAGE: int = len(list(pathlib.Path(config["path"]).glob("*.jpg")))
-QUERY: dict[str, list[str]] = config["query"]
+# reference window parameters
+POSITION: tuple[int, int] = config["position"]
+SIZE: tuple[int, int] = config["size"]
+# image source
+PATH: pathlib.Path = pathlib.Path(config["path"])
+ONLINE: bool = config["online"]
+QUERY: str = config["query"]
+API_URL: str = config["api_url"]
+URL: str = f"{API_URL}?q={QUERY}" if QUERY else API_URL
 
 
-def request_image(url: str, amount: int) -> list[io.BytesIO]:
+def request(url: str, amount: int) -> list[io.BytesIO]:
     images = set()
-    if QUERY:
-        url += f"?q={QUERY}"
 
     while len(images) < amount:
         try:
+            # request a random card from the api
             card_response = requests.get(url, timeout=30)
             card_response.raise_for_status()
-            json_response = card_response.json()
-            image_src = json_response["image_uris"]["art_crop"]
+            image_src = card_response.json()["image_uris"]["art_crop"]
+            # retrieve the art of this image
             image_response = requests.get(image_src, timeout=30)
-            image = image_response.content
-            images.add(io.BytesIO(image))
+            image_response.raise_for_status()
+            images.add(io.BytesIO(image_response.content))
 
-        except KeyError:
+        except KeyError:  # probably no art crop
             continue
+        except requests.HTTPError:  # probably no connection
+            raise requests.HTTPError
 
     return list(images)
 
 
-def sample_image(amount: int, path: pathlib.Path) -> list[io.BytesIO]:
+def sample(path: str, amount: int) -> list[io.BytesIO]:
     sampled_images = set()
+
     while len(sampled_images) < amount:
         try:
             image_file = random.choice(list(path.glob("*.jpg")))
             with image_file.open(mode="rb") as file:
                 sampled_images.add(io.BytesIO(file.read()))
-        except PermissionError:
+
+        except PermissionError:  # the file is probably open
             continue
 
     return list(sampled_images)
 
 
-def main():
-    set_win = SetupWindow(MAX_IMAGE, DEFAULT_TIME, DEFAULT_AMOUNT)
-    time, amount = set_win.run()
+def main() -> None:
+    setup_window = SetupWindow(DEFAULT_TIME, DEFAULT_AMOUNT, MAX_IMAGE)
+    time, amount = setup_window.run()
 
     if not (time and amount):
-        return
-    if ONLINE:
-        images = request_image(API_URL, amount)
-    else:
-        images = sample_image(amount, IMAGE_PATH)
+        sys.exit()
 
-    ref_win = ReferenceWindow(time, images, POSITION, SIZE)
-    ref_win.run()
+    images = request(URL, amount) if ONLINE else sample(PATH, amount)
+
+    reference_window = ReferenceWindow(time, images, POSITION, SIZE)
+    reference_window.run()
 
 
 if __name__ == "__main__":

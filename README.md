@@ -5,10 +5,10 @@ The app allows users to set a timer and interact with the Scryfall API to fetch 
 
 ## Features
 
-- **Built-in Timer:** The app comes with a timer feature, allowing users to set a specific duration for their drawing sessions. Users can adjust the timer to their preferred drawing time.
-- **Online and Local Image Selection:** Users have the option to fetch card images from the Scryfall API or choose images locally.
-- **Advanced Filtering Options:** The API enables users to apply filters to specify card attributes, such as the card artist. To use the filtering option, you just need to insert the query inside the config file or keep it empty to apply no filter.
-For more informations https://scryfall.com/docs/syntax
+-   **Built-in Timer:** The app comes with a timer feature, allowing users to set a specific duration for their drawing sessions. Users can adjust the timer to their preferred drawing time.
+-   **Online and Local Image Selection:** Users have the option to fetch card images from the Scryfall API or choose images locally.
+-   **Advanced Filtering Options:** The API enables users to apply filters to specify card attributes, such as the card artist. To use the filtering option, you just need to insert the query inside the config file or keep it empty to apply no filter.
+    For more informations https://scryfall.com/docs/syntax
 
 ```json
 "query": "(a:magali or a:john) and (art:warrior)"

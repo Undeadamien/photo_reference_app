@@ -3,14 +3,16 @@ import tkinter as tk
 
 from PIL import Image, ImageTk
 
+from module.drag_handler import DraggableWidgetHandler
+
 
 class ReferenceWindow(tk.Tk):
     def __init__(
         self,
         duration: int,
-        image_data: list[io.BytesIO],
-        image_position: tuple[int, int],
-        max_size: tuple[int, int],
+        image: list[io.BytesIO],
+        position: tuple[int, int],
+        size: tuple[int, int],
     ):
         super().__init__()
 
@@ -18,7 +20,7 @@ class ReferenceWindow(tk.Tk):
         self.attributes("-topmost", True)
         self.focus_force()
         self.overrideredirect(True)
-        self.geometry(f"+{image_position[0]}+{image_position[1]}")
+        self.geometry(f"+{position[0]}+{position[1]}")
         self.configure(
             bg="black",
             highlightbackground="black",
@@ -30,15 +32,13 @@ class ReferenceWindow(tk.Tk):
         self.duration: int = duration * 60 + 1
         self.paused: bool = False
         self.remaining_time: int = self.duration
-        self.timer_update_call = None
-
         # image
         self.current_image: int = 0  # store which image is currently displayed
-        self.image_position: tuple = image_position  # top-left corner
-        self.max_size: tuple = max_size
-        self.images: int = self.convert(image_data)
-
-        self.start_x, self.start_y = None, None
+        self.position: tuple = position  # top-left corner
+        self.size: tuple = size
+        self.images: int = self.convert(image)
+        # misc
+        self.timer_update_call = None
 
         # widgets
         self.timer = tk.Label(self)  # place holder for the timer
@@ -87,8 +87,9 @@ class ReferenceWindow(tk.Tk):
             width=2,
         )
 
-        # set draggable widget
-        self.draggable_widgets = [self.picture, self.timer, self.cover]
+        # setup the drag handler
+        draggable_widgets = [self.picture, self.timer, self.cover]
+        self.drag_handler = DraggableWidgetHandler(self, draggable_widgets)
 
         # place widgets on grid
         self.grid_columnconfigure(1, weight=2)
@@ -97,9 +98,9 @@ class ReferenceWindow(tk.Tk):
         self.picture.grid(row=1, column=0, columnspan=3)
         self.timer.grid(row=0, column=1, sticky="nesw")
 
-        self.bind("<B1-Motion>", self.do_move)
-        self.bind("<ButtonPress-1>", self.start_move)
-        self.bind("<ButtonRelease-1>", self.stop_move)
+        self.bind("<ButtonPress-1>", self.drag_handler.start_move)
+        self.bind("<B1-Motion>", self.drag_handler.do_move)
+        self.bind("<ButtonRelease-1>", self.drag_handler.stop_move)
         # lambda _ to catch the event variabe send by bind
         self.bind("<Escape>", lambda _: self.destroy())
         self.bind("<space>", lambda _: self.pause())
@@ -108,20 +109,12 @@ class ReferenceWindow(tk.Tk):
         converted_images = []
 
         for data in image:
-            try:
-                image = Image.open(data)
-            except Exception as exception:
-                print(exception)
-                continue
-
-            # rescale the image with the best ratio
-            ratio_w = self.max_size[0] / image.width
-            ratio_h = self.max_size[1] / image.height
-            ratio = min(ratio_w, ratio_h)
+            # load and strech the image
+            image = Image.open(data)
+            ratio = min(self.size[0] / image.width, self.size[1] / image.height)
             new_size = (int(image.width * ratio), int(image.height * ratio))
-            image = image.resize(new_size)
-
-            converted_images.append(ImageTk.PhotoImage(image))
+            image = ImageTk.PhotoImage(image.resize(new_size))
+            converted_images.append(image)
 
         return converted_images
 
@@ -136,6 +129,7 @@ class ReferenceWindow(tk.Tk):
                 height=self.picture.winfo_height() - 2,
                 width=self.picture.winfo_width() - 2,
             )
+
         else:
             self.cover.grid_forget()
             self.picture.grid(row=1, column=0, columnspan=3)
@@ -145,13 +139,12 @@ class ReferenceWindow(tk.Tk):
         self.current_image += 1
         if self.current_image >= len(self.images):
             self.destroy()
-            return
-        self.picture.configure(image=self.images[self.current_image])
+        else:
+            self.picture.configure(image=self.images[self.current_image])
 
     def update_timer(self) -> None:
         self.remaining_time -= 1
         minutes, seconds = divmod(self.remaining_time, 60)
-
         self.timer.configure(
             bg="white",
             font=("Small Fonts", 15, "bold"),
@@ -162,7 +155,6 @@ class ReferenceWindow(tk.Tk):
 
         if self.remaining_time >= 0:
             self.timer_update_call = self.after(1000, self.update_timer)
-
         else:
             self.after_cancel(self.timer_update_call)
             self.remaining_time = self.duration
@@ -172,27 +164,3 @@ class ReferenceWindow(tk.Tk):
     def run(self) -> None:
         self.update_timer()
         self.mainloop()
-
-    def start_move(self, event) -> None:
-        def click_on(wid: tk.Widget):
-            m_x = self.winfo_pointerx() - self.winfo_rootx()
-            m_y = self.winfo_pointery() - self.winfo_rooty()
-            if not (wid.winfo_x() < m_x < wid.winfo_x() + wid.winfo_width()):
-                return False
-            if not (wid.winfo_y() < m_y < wid.winfo_y() + wid.winfo_height()):
-                return False
-            return True
-
-        if any(map(click_on, self.draggable_widgets)):
-            self.start_x, self.start_y = event.x, event.y
-        else:
-            self.start_x, self.start_y = None, None
-
-    def do_move(self, event) -> None:
-        if self.start_y and self.start_x:
-            p_x = self.winfo_x() + event.x - self.start_x
-            p_y = self.winfo_y() + event.y - self.start_y
-            self.geometry(f"+{p_x}+{p_y}")
-
-    def stop_move(self, _) -> None:
-        self.start_x, self.start_y = None, None

@@ -1,13 +1,10 @@
 import tkinter as tk
 
+from module.drag_handler import DraggableWidgetHandler
+
 
 class SetupWindow(tk.Tk):
-    def __init__(
-        self,
-        max_image_choice: int,
-        default_time: int,
-        default_amount: int,
-    ):
+    def __init__(self, default_time: int, default_amount: int, max_image: int):
         super().__init__()
 
         # configure window
@@ -24,7 +21,6 @@ class SetupWindow(tk.Tk):
 
         # attributes
         self.return_values = [0, 0]
-        self.start_x, self.start_y = None, None
 
         # widgets
         self.time_slider = tk.Scale(
@@ -59,7 +55,7 @@ class SetupWindow(tk.Tk):
             showvalue=False,
             sliderrelief="solid",
             tickinterval=1,
-            to=min(max_image_choice, 10),
+            to=min(max_image, 10),
             troughcolor="grey",
         )
 
@@ -94,24 +90,25 @@ class SetupWindow(tk.Tk):
             text="CONFIRM",
         )
 
-        # set draggable widget
-        self.draggable_widgets: list[tk.Widget] = [self.time_label, self.amount_label]
+        # setup the drag handler
+        draggable_widgets = [self.time_label, self.amount_label]
+        self.drag_handler = DraggableWidgetHandler(self, draggable_widgets)
 
         # set sliders values
         self.time_slider.set(default_time)
         self.amount_slider.set(default_amount)
 
         # place widgets on grid
+        self.time_label.grid(row=0, sticky="nesw")
         self.amount_label.grid(row=0, column=1, sticky="nesw")
+        self.time_slider.grid(row=1, column=0, sticky="nesw")
         self.amount_slider.grid(row=1, column=1, sticky="nesw")
         self.confirm_button.grid(row=3, column=0, columnspan=2, sticky="nesw")
-        self.time_label.grid(row=0, sticky="nesw")
-        self.time_slider.grid(row=1, column=0, sticky="nesw")
 
         # bind action to function
-        self.bind("<B1-Motion>", self.do_move)
-        self.bind("<ButtonPress-1>", self.start_move)
-        self.bind("<ButtonRelease-1>", self.stop_move)
+        self.bind("<ButtonPress-1>", self.drag_handler.start_move)
+        self.bind("<B1-Motion>", self.drag_handler.do_move)
+        self.bind("<ButtonRelease-1>", self.drag_handler.stop_move)
         self.bind("<Return>", lambda _: self.confirm())
 
     def confirm(self) -> None:
@@ -128,27 +125,3 @@ class SetupWindow(tk.Tk):
         self.recenter()
         self.mainloop()
         return self.return_values
-
-    def start_move(self, event) -> None:
-        def click_on(wid: tk.Widget):
-            m_x = self.winfo_pointerx() - self.winfo_rootx()
-            m_y = self.winfo_pointery() - self.winfo_rooty()
-            if not (wid.winfo_x() < m_x < wid.winfo_x() + wid.winfo_width()):
-                return False
-            if not (wid.winfo_y() < m_y < wid.winfo_y() + wid.winfo_height()):
-                return False
-            return True
-
-        if any(map(click_on, self.draggable_widgets)):
-            self.start_x, self.start_y = event.x, event.y
-        else:
-            self.start_x, self.start_y = None, None
-
-    def do_move(self, event) -> None:
-        if self.start_y and self.start_x:
-            p_x = self.winfo_x() + event.x - self.start_x
-            p_y = self.winfo_y() + event.y - self.start_y
-            self.geometry(f"+{p_x}+{p_y}")
-
-    def stop_move(self, _) -> None:
-        self.start_x, self.start_y = None, None
