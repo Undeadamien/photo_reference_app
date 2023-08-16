@@ -116,7 +116,7 @@ class SetupWindow(tk.Tk):
         self.after(0, self.destroy)
 
     def recenter(self) -> None:
-        self.update()  # update to get the actual size of the window
+        self.update_idletasks()  # update to get the actual size of the window
         p_x = self.winfo_screenwidth() // 2 - self.winfo_width() // 2
         p_y = self.winfo_screenheight() // 2 - self.winfo_height() // 2
         self.geometry(f"+{p_x}+{p_y}")

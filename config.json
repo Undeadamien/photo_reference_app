@@ -5,7 +5,8 @@
   "online": false,
   "query": "",
 
-  "default": { "amount": 1, "time": 5 },
+  "base_amount": 1,
+  "base_time": 5,
 
   "position": [0, 40],
   "size": [400, 400]

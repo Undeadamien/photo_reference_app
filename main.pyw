@@ -10,24 +10,16 @@ from module.reference_window import ReferenceWindow
 from module.setup_window import SetupWindow
 
 CONFIG_FILE: pathlib.Path = pathlib.Path(__file__).parent / "config.json"
-with CONFIG_FILE.open() as config:
-    config = json.load(config)
-# setup window parameters
-DEFAULT_AMOUNT: int = config["default"]["amount"]
-DEFAULT_TIME: int = config["default"]["time"]
-MAX_IMAGE: int = len(list(pathlib.Path(config["path"]).glob("*.jpg")))
-# reference window parameters
-POSITION: tuple[int, int] = config["position"]
-SIZE: tuple[int, int] = config["size"]
-# image source
-PATH: pathlib.Path = pathlib.Path(config["path"])
-ONLINE: bool = config["online"]
-QUERY: str = config["query"]
-API_URL: str = config["api_url"]
-URL: str = f"{API_URL}?q={QUERY}" if QUERY else API_URL
 
 
-def request(url: str, amount: int) -> list[io.BytesIO]:
+def load_config(config_file: pathlib.Path):
+    with config_file.open() as config:
+        config = json.load(config)
+    return config
+
+
+def request(url: str, query: str, amount: int) -> list[io.BytesIO]:
+    url = f"{url}?q={query}" if query else url
     images = set()
 
     while len(images) < amount:
@@ -65,16 +57,27 @@ def sample(path: str, amount: int) -> list[io.BytesIO]:
 
 
 def main() -> None:
-    setup_window = SetupWindow(DEFAULT_TIME, DEFAULT_AMOUNT, MAX_IMAGE)
-    time, amount = setup_window.run()
+    config = load_config(CONFIG_FILE)
+    image_path = pathlib.Path(config["path"])
+    max_image = len(list(image_path.glob("*.jpg")))
 
+    # launch the setup window and retrieve the parameters
+    setup_w = SetupWindow(config["base_time"], config["base_amount"], max_image)
+    time, amount = setup_w.run()
+
+    # exit the app if not paramerters where selected
     if not (time and amount):
         sys.exit()
 
-    images = request(URL, amount) if ONLINE else sample(PATH, amount)
+    # load the images from the selected source
+    if config["online"]:
+        images = request(config["api_url"], config["query"], amount)
+    else:
+        images = sample(image_path, amount)
 
-    reference_window = ReferenceWindow(time, images, POSITION, SIZE)
-    reference_window.run()
+    # launch the reference window
+    ref_w = ReferenceWindow(time, images, config["position"], config["size"])
+    ref_w.run()
 
 
 if __name__ == "__main__":
